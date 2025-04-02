@@ -3,6 +3,7 @@ import { Button, Input, List, Space, message, Form, Popconfirm } from 'antd';
 import { EditOutlined, SaveOutlined, DeleteOutlined, CloseOutlined } from '@ant-design/icons';
 import { Duty } from '../types/duties';
 import { updateDuty, deleteDuty } from '../services/dutiesApi';
+import {extractErrorMessage} from './utilities'
 
 interface DutyListProps {
   duties: Duty[];
@@ -13,30 +14,30 @@ const DutyList: React.FC<DutyListProps> = ({ duties, onUpdate }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form] = Form.useForm();
 
-  const handleUpdate = async (id: string, name: string) => {
+  const handleUpdate = async (id: string, name: string, version: Date): Promise<void> => {
     try {
-      await updateDuty(id, name);
+      await updateDuty(id, name, version);
       setEditingId(null);
       onUpdate();
-      message.success('Duty updated');
-    } catch (error) {
-      message.error('Failed to update duty');
+      message.success("Duty updated successfully.");
+    } catch (error: unknown) {
+      const errorMessage = extractErrorMessage(error);
+      message.error(`Failed to update duty: ${errorMessage}`);
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string, version: Date) => {
     try {
-      console.log("handle duty");
-      const success = await deleteDuty(id);
-      console.log("handle duty done");
+      const success = await deleteDuty(id,version);
       if (success) {
         message.success('Duty deleted');
         onUpdate();
       } else {
         message.error('Failed to delete duty');
       }
-    } catch {
-      message.error('Failed to delete duty');
+    } catch (error: unknown){
+      const errorMessage = extractErrorMessage(error);
+      message.error(`Failed to delete duty: ${errorMessage}`);
     }
   };
 
@@ -50,7 +51,7 @@ const DutyList: React.FC<DutyListProps> = ({ duties, onUpdate }) => {
                     <Form
                         form={form}
                         initialValues={{ name: duty.name }}
-                        onFinish={({ name }) => handleUpdate(duty.id, name)}
+                        onFinish={({ name }) => handleUpdate(duty.id, name,duty.version)}
                         layout="inline"
                     >
                       <Form.Item
@@ -68,7 +69,7 @@ const DutyList: React.FC<DutyListProps> = ({ duties, onUpdate }) => {
                       <Form.Item>
                         <Popconfirm
                             title="Are you sure to delete this duty?"
-                            onConfirm={() => handleDelete(duty.id)}
+                            onConfirm={() => handleDelete(duty.id,duty.version)}
                             okText="Yes"
                             cancelText="No"
                         >

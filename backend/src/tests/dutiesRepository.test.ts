@@ -9,6 +9,7 @@ jest.mock("../db/db", () => ({
 
 describe("Duties Repository", () => {
     let dutiesRepository: DutiesRepository;
+    const mockDate = new Date();
 
     beforeEach(() => {
         dutiesRepository = new DutiesRepository();
@@ -33,15 +34,35 @@ describe("Duties Repository", () => {
         expect(result).toHaveProperty("name", "New Duty");
     });
 
+    test("should update a duty from repository", async () => {
+        (pool.query as jest.Mock).mockResolvedValue({rowCount: 1, rows: [{ id: "1", name: "New Duty", version: mockDate }] });
+        const result = await dutiesRepository.update("1", "New Duty",mockDate);
+        expect(result).toBe(true);
+    });
+
+    test("should throw NotFoundError if duty to update is not found", async () => {
+        (pool.query as jest.Mock).mockResolvedValue({rowCount: 0, rows: [{ id: "1", name: "New Duty", version: mockDate }] });
+        await expect(dutiesRepository.update("999", "New Duty",mockDate)).rejects.toThrow("Duty not found");
+    });
+
+    test("should throw WrongVersionError if version of the duty to update is not found", async () => {
+        (pool.query as jest.Mock).mockResolvedValue({rowCount: 0, rows: [{ id: "1", name: "New Duty", version: mockDate }] });
+        await expect(dutiesRepository.update("1", "New Duty",new Date(2020,1,1))).rejects.toThrow("Duty version is not current");
+    });
 
     test("should delete a duty from repository", async () => {
-        (pool.query as jest.Mock).mockResolvedValue({ rowCount: 1 });
-        const result = await dutiesRepository.delete("1");
+        (pool.query as jest.Mock).mockResolvedValue({rowCount: 1, rows: [{ id: "1", name: "New Duty", version: mockDate }] });
+        const result = await dutiesRepository.delete("1",mockDate);
         expect(result).toBe(true);
     });
 
     test("should throw NotFoundError if duty to delete is not found", async () => {
-        (pool.query as jest.Mock).mockResolvedValue({ rowCount: 0 });
-        await expect(dutiesRepository.delete("999")).rejects.toThrow("Duty with ID 999 not found");
+        (pool.query as jest.Mock).mockResolvedValue({rowCount: 0, rows: [{ id: "1", name: "New Duty", version: mockDate }] });
+        await expect(dutiesRepository.delete("999",mockDate)).rejects.toThrow("Duty not found");
+    });
+
+    test("should throw WrongVersionError if version of the duty to delete is not found", async () => {
+        (pool.query as jest.Mock).mockResolvedValue({rowCount: 0, rows: [{ id: "1", name: "New Duty", version: mockDate }] });
+        await expect(dutiesRepository.delete("1", new Date(2020,1,1))).rejects.toThrow("Duty version is not current");
     });
 });

@@ -19,20 +19,20 @@ export class DutiesService {
     return this.repository.create(name);
   }
 
-  async update(id: string, name: string): Promise<boolean> {
+  async update(id: string, name: string, version : Date): Promise<boolean> {
     if (!name || name.trim().length === 0) {
       throw new Error("Name is required and cannot be empty");
     }
     if (!id || !isValidUUID(id)) {
       throw new Error("Invalid duty ID");
     }
-    return this.repository.update(id, name);
+    return this.repository.update(id, name, version);
   }
 
-  async delete(id: string): Promise<boolean> {
+  async delete(id: string, version : Date): Promise<boolean> {
     if (!id || !isValidUUID(id)) {
       throw new Error("Invalid duty ID");
     }
-    return this.repository.delete(id);
+    return this.repository.delete(id, version);
   }
 }

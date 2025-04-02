@@ -5,6 +5,7 @@ import { Request, Response } from "express";
 describe("Duties Controller", () => {
     let dutiesController: DutiesController;
     let mockDutiesService: Partial<DutiesService>;
+    const mockDate = new Date();
 
     beforeEach(() => {
         mockDutiesService = {
@@ -55,14 +56,14 @@ describe("Duties Controller", () => {
     });
 
     test("should update a duty", async () => {
-        const req = { params: { id: "1" }, body: { name: "Updated Duty" } } as unknown as Request;
+        const req = { params: { id: "1" }, body: { name: "Updated Duty", version: mockDate } } as unknown as Request;
         const res = {
             status: jest.fn().mockReturnThis(),
             send: jest.fn(),
             sendStatus: jest.fn()
         } as unknown as Response;
         await dutiesController.update(req, res);
-        expect(mockDutiesService.update).toHaveBeenCalledWith("1", "Updated Duty");
+        expect(mockDutiesService.update).toHaveBeenCalledWith("1", "Updated Duty", mockDate);
         expect(res.sendStatus).toHaveBeenCalledWith(200);
     });
 
@@ -77,9 +78,20 @@ describe("Duties Controller", () => {
         expect(res.send).toHaveBeenCalledWith("Missing 'name' in request body");
     });
 
+    test("should return 400 if version is missing updating a duty", async () => {
+        const req = { params: { id: "1" }, body: { name : "No version duty" } } as unknown as Request;
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            send: jest.fn()
+        } as unknown as Response;
+        await dutiesController.update(req, res);
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.send).toHaveBeenCalledWith("Missing 'version' in request body");
+    });
+
     test("should return 404 if duty is not found updating a duty", async () => {
         mockDutiesService.update = jest.fn().mockResolvedValue(false);
-        const req = { params: { id: "999" }, body: { name: "Nonexistent Duty" } } as unknown as Request;
+        const req = { params: { id: "999" }, body: { name: "Nonexistent Duty", version: mockDate } } as unknown as Request;
         const res = { sendStatus: jest.fn() } as unknown as Response;
         await dutiesController.update(req, res);
         expect(res.sendStatus).toHaveBeenCalledWith(404);
@@ -87,7 +99,7 @@ describe("Duties Controller", () => {
 
     test("should return 500 on error updating a duty", async () => {
         mockDutiesService.update = jest.fn().mockRejectedValue(new Error("Database failure"));
-        const req = { params: { id: "1" }, body: { name: "Updated Duty" } } as unknown as Request;
+        const req = { params: { id: "1" }, body: { name: "Updated Duty", version: mockDate } } as unknown as Request;
         const res = { status: jest.fn().mockReturnThis(), send: jest.fn() } as unknown as Response;
         await dutiesController.update(req, res);
         expect(res.status).toHaveBeenCalledWith(500);
@@ -96,29 +108,39 @@ describe("Duties Controller", () => {
 
     test("should delete a duty", async () => {
         mockDutiesService.delete = jest.fn().mockResolvedValue(true);
-        const req = { params: { id: "1" } } as unknown as Request;
+        const req = { params: { id: "1" }, body: { version: mockDate } } as unknown as Request;
         const res = { sendStatus: jest.fn() } as unknown as Response;
         await dutiesController.delete(req, res);
-        expect(mockDutiesService.delete).toHaveBeenCalledWith("1");
+        expect(mockDutiesService.delete).toHaveBeenCalledWith("1", mockDate);
         expect(res.sendStatus).toHaveBeenCalledWith(200);
     });
 
     test("should return 404 if duty is not found deleting a duty", async () => {
         mockDutiesService.delete = jest.fn().mockResolvedValue(false);
-        const req = { params: { id: "999" } } as unknown as Request;
+        const req = { params: { id: "999" }, body: { version: mockDate } } as unknown as Request;
         const res = { sendStatus: jest.fn() } as unknown as Response;
         await dutiesController.delete(req, res);
-        expect(mockDutiesService.delete).toHaveBeenCalledWith("999");
+        expect(mockDutiesService.delete).toHaveBeenCalledWith("999", mockDate);
         expect(res.sendStatus).toHaveBeenCalledWith(404);
     });
 
     test("should return 500 on internal server error deleting a duty", async () => {
         mockDutiesService.delete = jest.fn().mockRejectedValue(new Error("Database failure"));
-        const req = { params: { id: "1" } } as unknown as Request;
+        const req = { params: { id: "1" }, body: { version: mockDate } } as unknown as Request;
         const res = { status: jest.fn().mockReturnThis(), send: jest.fn() } as unknown as Response;
         await dutiesController.delete(req, res);
         expect(res.status).toHaveBeenCalledWith(500);
         expect(res.send).toHaveBeenCalledWith("Error deleting duty: Database failure");
     });
 
+    test("should return 400 if version is missing deleting a duty", async () => {
+        const req = { params: { id: "1" }, body: {  } } as unknown as Request;
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            send: jest.fn()
+        } as unknown as Response;
+        await dutiesController.delete(req, res);
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.send).toHaveBeenCalledWith("Missing 'version' in request body");
+    });
 });

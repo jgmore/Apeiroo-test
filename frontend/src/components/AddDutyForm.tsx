@@ -1,6 +1,7 @@
 import React from 'react';
 import { Form, Input, Button, message, Space } from 'antd';
 import { createDuty } from '../services/dutiesApi';
+import {extractErrorMessage} from './utilities'
 
 interface AddDutyFormProps {
   onAddSuccess: () => void;
@@ -15,8 +16,9 @@ const AddDutyForm: React.FC<AddDutyFormProps> = ({ onAddSuccess }) => {
       form.resetFields();
       onAddSuccess();
 	  message.success('Duty added');
-    } catch (error) {
-      message.error('Failed to add duty');
+    } catch (error: unknown) {
+        const errorMessage = extractErrorMessage(error);
+        message.error(`Failed to add duty: ${errorMessage}`);
     }
   };
 

@@ -1,7 +1,6 @@
 import { createDutiesRouter } from "../routes/dutiesRoutes";
 import { Router } from "express";
 import { DutiesService } from "../services/dutiesService";
-import { DutiesController } from "../controllers/dutiesController";
 import request from "supertest";
 import express from "express";
 
@@ -21,6 +20,7 @@ describe("Duties Routes", () => {
     let dutiesService: DutiesService;
     let router: Router;
     let app: express.Express;
+    const mockDate : Date = new Date();
 
     beforeEach(() => {
         dutiesService = new DutiesService();
@@ -47,13 +47,13 @@ describe("Duties Routes", () => {
     });
 
     test("PUT /duties/:id should call update", async () => {
-        const response = await request(app).put("/duties/1").send({ name: "Updated Duty" });
+        const response = await request(app).put("/duties/1").send({ name: "Updated Duty", version : mockDate });
         expect(response.status).toBe(200);
         expect(response.text).toBe("update");
     });
 
     test("DELETE /duties/:id should call delete", async () => {
-        const response = await request(app).delete("/duties/1");
+        const response = await request(app).delete("/duties/1").send({ name: "Updated Duty", version : mockDate });
         expect(response.status).toBe(200);
         expect(response.text).toBe("delete");
     });

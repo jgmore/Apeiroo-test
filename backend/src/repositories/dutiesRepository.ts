@@ -1,9 +1,19 @@
 import { pool } from "../db/db";
 import queries from "../config/queries.json";
 import { Duty } from "../types/duty";
-import { DatabaseError, NotFoundError } from "../errors/customErrors";
+import {DatabaseError, NotFoundError, WrongVersionError} from "../errors/customErrors";
 
 export class DutiesRepository {
+    async isCurrentVersion(id: string, version: Date): Promise<boolean> {
+        const currentVersion = await pool.query<{ version: Date }>(queries.getVersion, [id]);
+        if (currentVersion.rows.length === 0) {
+            throw new NotFoundError(`Duty not found`);
+        }
+
+        const dbVersion = currentVersion.rows[0].version;
+        return version.getTime() === new Date(dbVersion).getTime();
+    }
+
     async getAll(): Promise<Duty[]> {
         try {
             const result = await pool.query<Duty>(queries.getAll);
@@ -22,24 +32,28 @@ export class DutiesRepository {
         }
     }
 
-    async update(id: string, name: string): Promise<boolean> {
+    async update(id: string, name: string, version : Date): Promise<boolean> {
         try {
+            if (!await this.isCurrentVersion(id, version)) throw new WrongVersionError(`Duty version is not current`);
             const result = await pool.query(queries.update, [name, id]);
-            if ((result.rowCount ?? 0) === 0) throw new NotFoundError(`Duty with ID ${id} not found`);
+            if ((result.rowCount ?? 0) === 0) throw new NotFoundError(`Duty not found`);
             return true;
         } catch (err) {
             if (err instanceof NotFoundError) throw err;
+            if (err instanceof WrongVersionError) throw err;
             throw new DatabaseError(`Error updating duty: ${err instanceof Error ? err.message : "Unknown error"}`);
         }
     }
 
-    async delete(id: string): Promise<boolean> {
+    async delete(id: string, version : Date): Promise<boolean> {
         try {
+            if (!await this.isCurrentVersion(id, version)) throw new WrongVersionError(`Duty version is not current`);
             const result = await pool.query<Duty>(queries.delete, [id]);
-            if ((result.rowCount ?? 0) === 0) throw new NotFoundError(`Duty with ID ${id} not found`);
+            if ((result.rowCount ?? 0) === 0) throw new NotFoundError(`Duty not found`);
             return true;
         } catch (err) {
             if (err instanceof NotFoundError) throw err;
+            if (err instanceof WrongVersionError) throw err;
             throw new DatabaseError(`Error deleting duty: ${err instanceof Error ? err.message : "Unknown error"}`);
         }
     }

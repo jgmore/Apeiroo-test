@@ -23,7 +23,8 @@ const mockDeleteDuty = deleteDuty as jest.Mock;
 const mockMessage = require('antd').message;
 
 describe('DutyList', () => {
-  const sampleDuty: Duty = { id: '1', name: 'Sample Duty' };
+  const mockDate : Date = new Date();
+  const sampleDuty: Duty = { id: '1', name: 'Sample Duty', version : mockDate };
   const onUpdate = jest.fn();
 
   const renderComponent = (duties = [sampleDuty]) =>
@@ -66,7 +67,7 @@ describe('DutyList', () => {
     fireEvent.click(screen.getByLabelText('Save'));
 
     await waitFor(() => {
-      expect(mockUpdateDuty).toHaveBeenCalledWith('1', 'Updated');
+      expect(mockUpdateDuty).toHaveBeenCalledWith('1', 'Updated', mockDate);
     });
     expect(onUpdate).toHaveBeenCalled();
     expect(mockMessage.success).toHaveBeenCalledWith('Duty updated');
@@ -92,7 +93,7 @@ describe('DutyList', () => {
     fireEvent.click(screen.getByLabelText('Delete'));
     await screen.findByText(/Yes/i);
     fireEvent.click(screen.getByText(/Yes/i));
-    await waitFor(() => expect(mockDeleteDuty).toHaveBeenCalledWith('1'));
+    await waitFor(() => expect(mockDeleteDuty).toHaveBeenCalledWith('1', mockDate));
     expect(onUpdate).toHaveBeenCalled();
   });
 
@@ -103,7 +104,7 @@ describe('DutyList', () => {
     fireEvent.click(screen.getByLabelText('Delete'));
     await screen.findByText(/Yes/i);
     fireEvent.click(screen.getByText(/Yes/i));
-    await waitFor(() => expect(mockDeleteDuty).toHaveBeenCalledWith('1'));
+    await waitFor(() => expect(mockDeleteDuty).toHaveBeenCalledWith('1',mockDate));
     expect(onUpdate).not.toHaveBeenCalled();
   });
 
