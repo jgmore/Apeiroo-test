@@ -1,7 +1,7 @@
 import React from 'react';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import DutyList from '../DutyList';
-import { updateDuty } from '../../services/dutiesApi';
+import { updateDuty, deleteDuty } from '../../services/dutiesApi';
 import { Duty } from '../../types/duties';
 import renderWithAntd from '../../testUtils/renderWithAntd';
 
@@ -19,6 +19,7 @@ jest.mock('antd', () => {
 });
 
 const mockUpdateDuty = updateDuty as jest.Mock;
+const mockDeleteDuty = deleteDuty as jest.Mock;
 const mockMessage = require('antd').message;
 
 describe('DutyList', () => {
@@ -82,6 +83,28 @@ describe('DutyList', () => {
     await waitFor(() => {
       expect(mockMessage.error).toHaveBeenCalledWith('Failed to update duty');
     });
+  });
+
+  it('deletes a duty', async () => {
+    mockDeleteDuty.mockResolvedValueOnce(true);
+    renderComponent();
+    startEditMode();
+    fireEvent.click(screen.getByLabelText('Delete'));
+    await screen.findByText(/Yes/i);
+    fireEvent.click(screen.getByText(/Yes/i));
+    await waitFor(() => expect(mockDeleteDuty).toHaveBeenCalledWith('1'));
+    expect(onUpdate).toHaveBeenCalled();
+  });
+
+  it('shows error if deleteDuty fails', async () => {
+    mockDeleteDuty.mockResolvedValueOnce(false);
+    renderComponent();
+    startEditMode();
+    fireEvent.click(screen.getByLabelText('Delete'));
+    await screen.findByText(/Yes/i);
+    fireEvent.click(screen.getByText(/Yes/i));
+    await waitFor(() => expect(mockDeleteDuty).toHaveBeenCalledWith('1'));
+    expect(onUpdate).not.toHaveBeenCalled();
   });
 
   it('renders nothing when duties list is empty', () => {

@@ -16,5 +16,8 @@ export function createDutiesRouter(dutiesService: DutiesService): Router {
   // PUT /:id
   router.put("/:id", controller.update.bind(controller));
 
+  // DELETE /:id
+  router.delete("/:id", controller.delete.bind(controller));
+
   return router;
 }

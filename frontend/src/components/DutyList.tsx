@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Button, Input, List, Space, message, Form } from 'antd';
-import { EditOutlined, SaveOutlined, CloseOutlined } from '@ant-design/icons';
+import { Button, Input, List, Space, message, Form, Popconfirm } from 'antd';
+import { EditOutlined, SaveOutlined, DeleteOutlined, CloseOutlined } from '@ant-design/icons';
 import { Duty } from '../types/duties';
-import { updateDuty } from '../services/dutiesApi';
+import { updateDuty, deleteDuty } from '../services/dutiesApi';
 
 interface DutyListProps {
   duties: Duty[];
@@ -24,6 +24,21 @@ const DutyList: React.FC<DutyListProps> = ({ duties, onUpdate }) => {
     }
   };
 
+  const handleDelete = async (id: string) => {
+    try {
+      console.log("handle duty");
+      const success = await deleteDuty(id);
+      console.log("handle duty done");
+      if (success) {
+        message.success('Duty deleted');
+        onUpdate();
+      } else {
+        message.error('Failed to delete duty');
+      }
+    } catch {
+      message.error('Failed to delete duty');
+    }
+  };
 
   return (
       <List
@@ -49,6 +64,16 @@ const DutyList: React.FC<DutyListProps> = ({ duties, onUpdate }) => {
                       </Form.Item>
                       <Form.Item>
                         <Button htmlType="submit" icon={<SaveOutlined />} aria-label="Save" />
+                      </Form.Item>
+                      <Form.Item>
+                        <Popconfirm
+                            title="Are you sure to delete this duty?"
+                            onConfirm={() => handleDelete(duty.id)}
+                            okText="Yes"
+                            cancelText="No"
+                        >
+                          <Button danger icon={<DeleteOutlined />} aria-label="Delete" />
+                        </Popconfirm>
                       </Form.Item>
                       <Form.Item>
                         <Button icon={<CloseOutlined />} aria-label="Cancel" onClick={() => setEditingId(null)} type="link" />

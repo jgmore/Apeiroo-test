@@ -9,7 +9,6 @@ export class DutiesRepository {
             const result = await pool.query<Duty>(queries.getAll);
             return result.rows;
         } catch (err) {
-            console.log(err);
             throw new DatabaseError(`Error fetching duties: ${err instanceof Error ? err.message : "Unknown error"}`);
         }
     }
@@ -31,6 +30,17 @@ export class DutiesRepository {
         } catch (err) {
             if (err instanceof NotFoundError) throw err;
             throw new DatabaseError(`Error updating duty: ${err instanceof Error ? err.message : "Unknown error"}`);
+        }
+    }
+
+    async delete(id: string): Promise<boolean> {
+        try {
+            const result = await pool.query<Duty>(queries.delete, [id]);
+            if ((result.rowCount ?? 0) === 0) throw new NotFoundError(`Duty with ID ${id} not found`);
+            return true;
+        } catch (err) {
+            if (err instanceof NotFoundError) throw err;
+            throw new DatabaseError(`Error deleting duty: ${err instanceof Error ? err.message : "Unknown error"}`);
         }
     }
 }

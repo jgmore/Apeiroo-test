@@ -48,4 +48,15 @@ export class DutiesController {
             res.status(500).send("Error updating duty: " + errorMsg);
         }
     }
+
+    async delete(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+            const success = await this.dutiesService.delete(id);
+            success ? res.sendStatus(200) : res.sendStatus(404);
+        } catch (err: unknown) {
+            const errorMsg = err instanceof Error ? err.message : "Unknown error";
+            res.status(500).send("Error deleting duty: " + errorMsg);
+        }
+    }
 }

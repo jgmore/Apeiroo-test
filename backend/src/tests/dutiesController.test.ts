@@ -11,6 +11,7 @@ describe("Duties Controller", () => {
             getAll: jest.fn().mockResolvedValue([{ id: "1", name: "Test Duty" }]),
             create: jest.fn().mockResolvedValue({ id: "1", name: "New Duty" }),
             update: jest.fn().mockResolvedValue({ id: "1", name: "Updated Duty" }),
+            delete: jest.fn().mockResolvedValue({ id: "1" }),
         };
         dutiesController = new DutiesController(mockDutiesService as DutiesService);
     });
@@ -91,6 +92,33 @@ describe("Duties Controller", () => {
         await dutiesController.update(req, res);
         expect(res.status).toHaveBeenCalledWith(500);
         expect(res.send).toHaveBeenCalledWith("Error updating duty: Database failure");
+    });
+
+    test("should delete a duty", async () => {
+        mockDutiesService.delete = jest.fn().mockResolvedValue(true);
+        const req = { params: { id: "1" } } as unknown as Request;
+        const res = { sendStatus: jest.fn() } as unknown as Response;
+        await dutiesController.delete(req, res);
+        expect(mockDutiesService.delete).toHaveBeenCalledWith("1");
+        expect(res.sendStatus).toHaveBeenCalledWith(200);
+    });
+
+    test("should return 404 if duty is not found deleting a duty", async () => {
+        mockDutiesService.delete = jest.fn().mockResolvedValue(false);
+        const req = { params: { id: "999" } } as unknown as Request;
+        const res = { sendStatus: jest.fn() } as unknown as Response;
+        await dutiesController.delete(req, res);
+        expect(mockDutiesService.delete).toHaveBeenCalledWith("999");
+        expect(res.sendStatus).toHaveBeenCalledWith(404);
+    });
+
+    test("should return 500 on internal server error deleting a duty", async () => {
+        mockDutiesService.delete = jest.fn().mockRejectedValue(new Error("Database failure"));
+        const req = { params: { id: "1" } } as unknown as Request;
+        const res = { status: jest.fn().mockReturnThis(), send: jest.fn() } as unknown as Response;
+        await dutiesController.delete(req, res);
+        expect(res.status).toHaveBeenCalledWith(500);
+        expect(res.send).toHaveBeenCalledWith("Error deleting duty: Database failure");
     });
 
 });

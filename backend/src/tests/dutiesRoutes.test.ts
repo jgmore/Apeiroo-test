@@ -52,4 +52,9 @@ describe("Duties Routes", () => {
         expect(response.text).toBe("update");
     });
 
+    test("DELETE /duties/:id should call delete", async () => {
+        const response = await request(app).delete("/duties/1");
+        expect(response.status).toBe(200);
+        expect(response.text).toBe("delete");
+    });
 });

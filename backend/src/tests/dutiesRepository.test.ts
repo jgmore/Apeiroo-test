@@ -33,4 +33,15 @@ describe("Duties Repository", () => {
         expect(result).toHaveProperty("name", "New Duty");
     });
 
+
+    test("should delete a duty from repository", async () => {
+        (pool.query as jest.Mock).mockResolvedValue({ rowCount: 1 });
+        const result = await dutiesRepository.delete("1");
+        expect(result).toBe(true);
+    });
+
+    test("should throw NotFoundError if duty to delete is not found", async () => {
+        (pool.query as jest.Mock).mockResolvedValue({ rowCount: 0 });
+        await expect(dutiesRepository.delete("999")).rejects.toThrow("Duty with ID 999 not found");
+    });
 });

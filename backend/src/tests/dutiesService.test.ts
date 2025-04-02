@@ -42,10 +42,10 @@ describe("DutiesService", () => {
     test("should update a duty", async () => {
         mockRepository.update.mockResolvedValue(true);
 
-        const result = await service.update("1", "Updated Duty");
+        const result = await service.update("274b6d20-7f47-41b3-a043-1e4eb9f7b88b", "Updated Duty");
 
         expect(result).toBe(true);
-        expect(mockRepository.update).toHaveBeenCalledWith("1", "Updated Duty");
+        expect(mockRepository.update).toHaveBeenCalledWith("274b6d20-7f47-41b3-a043-1e4eb9f7b88b", "Updated Duty");
     });
 
     test("should fail to update a duty with an invalid ID", async () => {
@@ -53,4 +53,16 @@ describe("DutiesService", () => {
         await expect(service.update("abc", "Updated Duty")).rejects.toThrow("Invalid duty ID");
     });
 
+    test("should delete a duty", async () => {
+        mockRepository.delete.mockResolvedValue(true);
+
+        const result = await service.delete("274b6d20-7f47-41b3-a043-1e4eb9f7b88b");
+
+        expect(result).toBe(true);
+        expect(mockRepository.delete).toHaveBeenCalledWith("274b6d20-7f47-41b3-a043-1e4eb9f7b88b");
+    });
+
+    test("should fail to delete a duty with an invalid ID", async () => {
+        await expect(service.delete("abc")).rejects.toThrow("Invalid duty ID");
+    });
 });

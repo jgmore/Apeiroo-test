@@ -1,15 +1,23 @@
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
-
 import { createDutiesRouter } from './routes/dutiesRoutes';
 import { DutiesService } from './services/dutiesService';
 import { errorHandler } from "./middleware/errorHandler";
+import dotenv from "dotenv";
 
+dotenv.config({ path: "./src/.env" });
 
 const dutiesService = new DutiesService();
 
 const app = express();
-const PORT: number = 3001;
+let parsedPort = Number(process.env.HOST_PORT);
+if (isNaN(parsedPort) || parsedPort <= 0) {
+  console.log("Invalid port number "+process.env.HOST_PORT+", using default port 3001");
+  parsedPort=3001;
+}
+
+const PORT: number = parsedPort;
+
 
 app.use(cors());
 app.use(express.json());

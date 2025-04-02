@@ -1,4 +1,4 @@
-import { fetchDuties, createDuty, updateDuty } from '../dutiesApi';
+import { fetchDuties, createDuty, updateDuty, deleteDuty } from '../dutiesApi';
 import config from '../../config.json';
 
 global.fetch = jest.fn();
@@ -57,4 +57,14 @@ describe('dutiesApi Service', () => {
         await expect(updateDuty('1', 'Updated Duty')).rejects.toThrow('Failed to update duty');
     });
 
+    it('deletes a duty successfully', async () => {
+        (fetch as jest.Mock).mockResolvedValue({ ok: true });
+        await deleteDuty('1');
+        expect(fetch).toHaveBeenCalledWith(`${config.API_URL}/duties/1`, { method: 'DELETE' });
+    });
+
+    it('handles delete duty failure', async () => {
+        (fetch as jest.Mock).mockResolvedValue({ ok: false });
+        await expect(deleteDuty('1')).rejects.toThrow('Failed to delete duty');
+    });
 });

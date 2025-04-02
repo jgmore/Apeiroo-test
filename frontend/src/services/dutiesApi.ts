@@ -27,3 +27,13 @@ export const updateDuty = async (id: string, name: string): Promise<boolean> => 
   if (!res.ok) throw new Error('Failed to update duty');
   return true;
 };
+
+export const deleteDuty = async (id: string): Promise<boolean> => {
+  console.log("Delete duty");
+  const res = await fetch(`${config.API_URL}/duties/${id}`, {
+    method: 'DELETE',
+  });
+  console.log("Delete duty done:"+res);
+  if (!res.ok) throw new Error('Failed to delete duty');
+  return true;
+};
