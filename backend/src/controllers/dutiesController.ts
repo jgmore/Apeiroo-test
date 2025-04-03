@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { DutiesService } from "../services/dutiesService";
 
 export class DutiesController {
@@ -8,18 +8,16 @@ export class DutiesController {
         this.dutiesService = dutiesService;
     }
 
-    async getAll(req: Request, res: Response) {
+    async getAll(req: Request, res: Response, next: NextFunction) {
         try {
             const duties = await this.dutiesService.getAll();
             res.status(200).json(duties);
         } catch (err: unknown) {
-            const errorMsg = err instanceof Error ? err.message : "Unknown error";
-            res.statusMessage = "Failed to fetch duties: " + errorMsg;
-            res.status(500).json({ error: "Failed to fetch duties: " + errorMsg });
+            next(err);
         }
     }
 
-    async create(req: Request, res: Response) {
+    async create(req: Request, res: Response, next: NextFunction) {
         try {
             const { name } = req.body as { name?: string };
             if (!name) {
@@ -29,13 +27,11 @@ export class DutiesController {
             const duty = await this.dutiesService.create(name);
             res.status(201).json(duty);
         } catch (err: unknown) {
-            const errorMsg = err instanceof Error ? err.message : "Unknown error";
-            res.statusMessage = "Error creating duty: " + errorMsg;
-            res.status(500).json({ error: "Error creating duty: " + errorMsg});
+            next(err);
         }
     }
 
-    async update(req: Request, res: Response) {
+    async update(req: Request, res: Response, next: NextFunction) {
         try {
             const { id } = req.params;
             const { name } = req.body as { name?: string };
@@ -56,13 +52,11 @@ export class DutiesController {
             const success = await this.dutiesService.update(id, name, parsedVersion);
             success ? res.sendStatus(200) : res.sendStatus(404);
         } catch (err: unknown) {
-            const errorMsg = err instanceof Error ? err.message : "Unknown error";
-            res.statusMessage = "Error updating duty: " + errorMsg;
-            res.status(500).send("Error updating duty: " + errorMsg);
+            next(err);
         }
     }
 
-    async delete(req: Request, res: Response) {
+    async delete(req: Request, res: Response, next: NextFunction) {
         try {
             const { id } = req.params;
             const { version } = req.body as { version?: string };
@@ -77,9 +71,7 @@ export class DutiesController {
             const success = await this.dutiesService.delete(id,parsedVersion);
             success ? res.sendStatus(200) : res.sendStatus(404);
         } catch (err: unknown) {
-            const errorMsg = err instanceof Error ? err.message : "Unknown error";
-            res.statusMessage = "Error deleting duty: " + errorMsg;
-            res.status(500).send("Error deleting duty: " + errorMsg);
+            next(err);
         }
     }
 }

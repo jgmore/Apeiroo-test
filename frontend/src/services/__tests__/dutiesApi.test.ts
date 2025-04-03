@@ -25,8 +25,13 @@ describe('dutiesApi Service', () => {
     });
 
     it('handles fetch duties failure', async () => {
-        (fetch as jest.Mock).mockResolvedValue({ ok: false });
-        await expect(fetchDuties()).rejects.toThrow('Failed to fetch duties');
+        (fetch as jest.Mock).mockResolvedValue({
+            ok: false,
+            text: jest.fn().mockResolvedValue("Error: Something went wrong"), // Mock text() method
+            json: jest.fn().mockRejectedValue(new Error("Invalid JSON")), // Simulate JSON parsing failure
+        });
+
+        await expect(fetchDuties()).rejects.toThrow('Invalid response from server');
     });
 
     it('creates a new duty successfully', async () => {
@@ -42,8 +47,13 @@ describe('dutiesApi Service', () => {
     });
 
     it('handles create duty failure', async () => {
-        (fetch as jest.Mock).mockResolvedValue({ ok: false });
-        await expect(createDuty('Fail Duty')).rejects.toThrow('Failed to create duty');
+        (fetch as jest.Mock).mockResolvedValue({
+            ok: false,
+            text: jest.fn().mockResolvedValue("Error: Unable to create duty"), // Mock text() method
+            json: jest.fn().mockRejectedValue(new Error("Invalid JSON")), // Simulate JSON parsing failure
+        });
+
+        await expect(createDuty('Fail Duty')).rejects.toThrow('Invalid response from server');
     });
 
     it('updates a duty successfully', async () => {
@@ -54,8 +64,12 @@ describe('dutiesApi Service', () => {
     });
 
     it('handles update duty failure', async () => {
-        (fetch as jest.Mock).mockResolvedValue({ ok: false });
-        await expect(updateDuty('1', 'Updated Duty', mockDate)).rejects.toThrow('Failed to update duty');
+        (fetch as jest.Mock).mockResolvedValue({
+            ok: false,
+            text: jest.fn().mockResolvedValue("Error: Unable to update duty"), // Mock text() method
+            json: jest.fn().mockRejectedValue(new Error("Invalid JSON")), // Simulate JSON parsing failure
+        });
+        await expect(updateDuty('1', 'Updated Duty', mockDate)).rejects.toThrow('Invalid response from server');
     });
 
     it('deletes a duty successfully', async () => {
@@ -65,7 +79,12 @@ describe('dutiesApi Service', () => {
     });
 
     it('handles delete duty failure', async () => {
-        (fetch as jest.Mock).mockResolvedValue({ ok: false });
-        await expect(deleteDuty('1', mockDate)).rejects.toThrow('Failed to delete duty');
+        (fetch as jest.Mock).mockResolvedValue({
+            ok: false,
+            text: jest.fn().mockResolvedValue("Error: Unable to delete duty"), // Mock text() method
+            json: jest.fn().mockRejectedValue(new Error("Invalid JSON")), // Simulate JSON parsing failure
+        });
+
+        await expect(deleteDuty('1', mockDate)).rejects.toThrow('Invalid response from server');
     });
 });

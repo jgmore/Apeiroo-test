@@ -70,7 +70,7 @@ describe('DutyList', () => {
       expect(mockUpdateDuty).toHaveBeenCalledWith('1', 'Updated', mockDate);
     });
     expect(onUpdate).toHaveBeenCalled();
-    expect(mockMessage.success).toHaveBeenCalledWith('Duty updated');
+    expect(mockMessage.success).toHaveBeenCalledWith('Duty updated successfully.');
   });
 
   it('shows error message if API update fails', async () => {
@@ -82,7 +82,7 @@ describe('DutyList', () => {
     fireEvent.click(screen.getByLabelText('Save'));
 
     await waitFor(() => {
-      expect(mockMessage.error).toHaveBeenCalledWith('Failed to update duty');
+      expect(mockMessage.error).toHaveBeenCalledWith('Failed to update duty: Update failed');
     });
   });
 
