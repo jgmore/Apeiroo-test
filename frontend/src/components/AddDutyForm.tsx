@@ -2,6 +2,7 @@ import React from 'react';
 import { Form, Input, Button, message, Space } from 'antd';
 import { createDuty } from '../services/dutiesApi';
 import {extractErrorMessage} from './utilities'
+import DOMPurify from 'dompurify';
 
 interface AddDutyFormProps {
   onAddSuccess: () => void;
@@ -12,7 +13,8 @@ const AddDutyForm: React.FC<AddDutyFormProps> = ({ onAddSuccess }) => {
 
   const onFinish = async (values: { name: string }) => {
     try {
-      await createDuty(values.name);
+      const sanitizedInput = DOMPurify.sanitize(values.name);
+      await createDuty(sanitizedInput);
       form.resetFields();
       onAddSuccess();
 	  message.success('Duty added');

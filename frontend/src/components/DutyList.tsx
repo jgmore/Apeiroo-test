@@ -4,6 +4,7 @@ import { EditOutlined, SaveOutlined, DeleteOutlined, CloseOutlined } from '@ant-
 import { Duty } from '../types/duties';
 import { updateDuty, deleteDuty } from '../services/dutiesApi';
 import {extractErrorMessage} from './utilities'
+import DOMPurify from 'dompurify';
 
 interface DutyListProps {
   duties: Duty[];
@@ -16,7 +17,8 @@ const DutyList: React.FC<DutyListProps> = ({ duties, onUpdate }) => {
 
   const handleUpdate = async (id: string, name: string, version: Date): Promise<void> => {
     try {
-      await updateDuty(id, name, version);
+      const sanitizedName = DOMPurify.sanitize(name);
+      await updateDuty(id, sanitizedName, version);
       setEditingId(null);
       onUpdate();
       message.success("Duty updated successfully.");
@@ -82,7 +84,7 @@ const DutyList: React.FC<DutyListProps> = ({ duties, onUpdate }) => {
                     </Form>
                 ) : (
                     <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-                      <span>{duty.name}</span>
+                      <span dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(duty.name) }} />
                       <Button
                           icon={<EditOutlined />}
                           onClick={() => {
