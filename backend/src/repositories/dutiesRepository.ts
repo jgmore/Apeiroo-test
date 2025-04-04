@@ -1,7 +1,7 @@
 import { pool } from "../db/db";
-import queries from "../config/queries.json";
 import { Duty } from "../types/duty";
 import {DatabaseError, NotFoundError, WrongVersionError} from "../errors/customErrors";
+const queries = require('../config/queries.json')
 
 export class DutiesRepository {
     async isCurrentVersion(id: string, version: Date): Promise<boolean> {

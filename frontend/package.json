@@ -24,7 +24,7 @@
     }
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "serve -s build",
     "build": "react-scripts build",
     "test": "jest",
     "eject": "react-scripts eject"

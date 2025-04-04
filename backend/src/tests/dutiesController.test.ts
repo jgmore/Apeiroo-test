@@ -1,6 +1,7 @@
 import { DutiesController } from "../controllers/dutiesController";
 import { DutiesService } from "../services/dutiesService";
 import { Request, Response } from "express";
+import {errorHandler} from "../middleware/errorHandler";
 
 describe("Duties Controller", () => {
     let dutiesController: DutiesController;
@@ -47,14 +48,35 @@ describe("Duties Controller", () => {
         expect(res.send).toHaveBeenCalledWith("Missing 'name' in request body");
     });
 
-    test("should return 500 on error creating a duty", async () => {
-        mockDutiesService.create = jest.fn().mockRejectedValue(new Error("Database failure"));
+    test("should call next with an error when creating a duty fails", async () => {
+        const error = new Error("Database failure");
+        mockDutiesService.create = jest.fn().mockRejectedValue(error);
         const req = { body: { name: "New Duty" } } as unknown as Request;
-        const res = { json: jest.fn(), status: jest.fn().mockReturnThis() } as unknown as Response;
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn()
+        } as unknown as Response;
+        const next = jest.fn();
         await dutiesController.create(req, res, next);
-        expect(res.status).toHaveBeenCalledWith(500);
-        expect(res.json).toHaveBeenCalledWith({"error": "Error creating duty: Database failure"});
+        expect(next).toHaveBeenCalledWith(error);
+        expect(res.status).not.toHaveBeenCalled();
+        expect(res.json).not.toHaveBeenCalled();
     });
+
+    test("should return 500 and database error message from middleware", () => {
+        const err = new Error("Database failure");
+        const req = {} as Request;
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn()
+        } as unknown as Response;
+        const next = jest.fn();
+        errorHandler(err, req, res, next);
+        expect(res.status).toHaveBeenCalledWith(500);
+        expect(res.json).toHaveBeenCalledWith({ error: "Internal Server Error" });
+    });
+
+
 
     test("should update a duty", async () => {
         const req = { params: { id: "1" }, body: { name: "Updated Duty", version: mockDate } } as unknown as Request;
@@ -98,14 +120,24 @@ describe("Duties Controller", () => {
         expect(res.sendStatus).toHaveBeenCalledWith(404);
     });
 
-    test("should return 500 on error updating a duty", async () => {
-        mockDutiesService.update = jest.fn().mockRejectedValue(new Error("Database failure"));
-        const req = { params: { id: "1" }, body: { name: "Updated Duty", version: mockDate } } as unknown as Request;
-        const res = { status: jest.fn().mockReturnThis(), send: jest.fn() } as unknown as Response;
+    test("should call next with an error when updating a duty fails", async () => {
+        const error = new Error("Database failure");
+        mockDutiesService.update = jest.fn().mockRejectedValue(error);
+        const req = {
+            params: { id: "1" },
+            body: { name: "Updated Duty", version: mockDate }
+        } as unknown as Request;
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            send: jest.fn()
+        } as unknown as Response;
+        const next = jest.fn();
         await dutiesController.update(req, res, next);
-        expect(res.status).toHaveBeenCalledWith(500);
-        expect(res.send).toHaveBeenCalledWith("Error updating duty: Database failure");
+        expect(next).toHaveBeenCalledWith(error);
+        expect(res.status).not.toHaveBeenCalled();
+        expect(res.send).not.toHaveBeenCalled();
     });
+
 
     test("should delete a duty", async () => {
         mockDutiesService.delete = jest.fn().mockResolvedValue(true);
@@ -125,14 +157,24 @@ describe("Duties Controller", () => {
         expect(res.sendStatus).toHaveBeenCalledWith(404);
     });
 
-    test("should return 500 on internal server error deleting a duty", async () => {
-        mockDutiesService.delete = jest.fn().mockRejectedValue(new Error("Database failure"));
-        const req = { params: { id: "1" }, body: { version: mockDate } } as unknown as Request;
-        const res = { status: jest.fn().mockReturnThis(), send: jest.fn() } as unknown as Response;
+    test("should call next with an error when deleting a duty fails", async () => {
+        const error = new Error("Database failure");
+        mockDutiesService.delete = jest.fn().mockRejectedValue(error);
+        const req = {
+            params: { id: "1" },
+            body: { version: mockDate }
+        } as unknown as Request;
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            send: jest.fn()
+        } as unknown as Response;
+        const next = jest.fn();
         await dutiesController.delete(req, res, next);
-        expect(res.status).toHaveBeenCalledWith(500);
-        expect(res.send).toHaveBeenCalledWith("Error deleting duty: Database failure");
+        expect(next).toHaveBeenCalledWith(error);
+        expect(res.status).not.toHaveBeenCalled();
+        expect(res.send).not.toHaveBeenCalled();
     });
+
 
     test("should return 400 if version is missing deleting a duty", async () => {
         const req = { params: { id: "1" }, body: {  } } as unknown as Request;
