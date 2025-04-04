@@ -183,7 +183,7 @@ And it needs at least 3 characters for the name of the duty.
 Once you enter a valid name for the duty, you need to press the save icon.
 ![Image Description](https://github.com/jgmore/Apeiroo-test/blob/main/Img/frontend05.jpg?raw=true)
 
-You will the duty updated and a message: "Duty updated successfully."
+You will see the duty updated and a message: "Duty updated successfully."
 ![Image Description](https://github.com/jgmore/Apeiroo-test/blob/main/Img/frontend06.jpg?raw=true)
 
 To delete a duty, you need to click the edit button first to enter the edit mode.
